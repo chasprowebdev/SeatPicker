@@ -32,6 +32,7 @@
 
 .seat-confirm-box .seat-confirmed {
   font-size: 24px;
+  padding: 0 4rem;
 }
 
 .seat-picker__row:nth-child(5) {

@@ -21,7 +21,7 @@ class SeatPickerComponent extends React.Component {
       loading: false,
       selected: false,
       confirmed: false,
-      selectedSeat: {},
+      selectedSeats: [],
       rows,
       totalPrice: 0,
     }
@@ -34,13 +34,15 @@ class SeatPickerComponent extends React.Component {
       },
       async () => {
         addCb(row, number, id, '');
-        let { totalPrice, rows } = this.state
+        let { totalPrice, rows, selectedSeats } = this.state
         const allSeats = rows
           .reduce((sum, item) => [...sum, ...item], [])
           .filter(item => !!item)
         const highlighedRow = allSeats.find(item => item.id == id)
         totalPrice += (highlighedRow ? highlighedRow.price : 0)
-        this.setState({ loading: false, selected: true, selectedSeat: { row, number, id }, totalPrice });
+        selectedSeats.push(number)
+        selectedSeats.sort((a, b) => a.localeCompare(b))
+        this.setState({ loading: false, selected: true, selectedSeats, totalPrice });
       }
     );
   };
@@ -72,13 +74,14 @@ class SeatPickerComponent extends React.Component {
       },
       async () => {
         removeCb(row, number, '');
-        let { totalPrice, rows } = this.state
+        let { totalPrice, rows, selectedSeats } = this.state
         const allSeats = rows
           .reduce((sum, item) => [...sum, ...item], [])
           .filter(item => !!item)
         const highlighedRow = allSeats.find(item => item.id == id)
         totalPrice -= highlighedRow ? highlighedRow.price : 0
-        this.setState({ loading: false, totalPrice });
+        selectedSeats = selectedSeats.filter(item => item != number)
+        this.setState({ loading: false, selected: selectedSeats.length > 0, totalPrice, selectedSeats });
       }
     );
   };
@@ -114,8 +117,21 @@ class SeatPickerComponent extends React.Component {
     this.setState({ confirmed: true })
   }
 
+  generateSeatsInfo = () => {
+    
+  }
+
   render() {
-    const { loading, selected, confirmed, selectedSeat, rows, totalPrice } = this.state
+    const { loading, selected, confirmed, selectedSeats, rows, totalPrice } = this.state
+    let seatInfoStr = ''
+    if (selectedSeats && selectedSeats.length) {
+      if (selectedSeats.length > 1) {
+        seatInfoStr = selectedSeats.slice(0, selectedSeats.length - 1).join(', ')
+        seatInfoStr = [seatInfoStr, selectedSeats[selectedSeats.length - 1]].join(' and ')
+      } else {
+        seatInfoStr = selectedSeats[0]
+      }
+    }
 
     return (
       <div className="seat-select">
@@ -152,7 +168,7 @@ class SeatPickerComponent extends React.Component {
         {confirmed && (
           <div className="seat-confirm-box">
             <i className="fa fa-check" />
-            <span className="seat-confirmed">{`Seat $${totalPrice} Confirmed`}</span>
+            <span className="seat-confirmed">{`Seats ${seatInfoStr} are confirmed for $${totalPrice}.`}</span>
           </div>
         )}
       </div>
