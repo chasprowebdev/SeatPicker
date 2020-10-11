@@ -1,0 +1,39 @@
+.seat-picker {
+  min-height: 300px;
+}
+
+.seat.seat--selected {
+  background-color: #13505c !important;
+}
+
+.seat.seat--enabled {
+  background-color: #a4d6e0 !important;
+}
+
+.seat-picker .seat-picker-action {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.seat-picker-actions {
+  margin-left: 28px;
+}
+
+.seat-confirm-box {
+  display: flex;
+  flex-direction: column;
+  color: #28a745;
+}
+
+.seat-confirm-box i {
+  font-size: 48px;
+}
+
+.seat-confirm-box .seat-confirmed {
+  font-size: 24px;
+}
+
+.seat-picker__row:nth-child(5) {
+  margin-top: 2rem;
+}

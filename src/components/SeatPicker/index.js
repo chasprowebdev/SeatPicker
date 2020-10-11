@@ -1,5 +1,8 @@
 import React from 'react'
 import SeatPicker from 'react-seat-picker';
+import Button from 'react-bootstrap/Button';
+import 'bootstrap/dist/css/bootstrap.min.css';
+import './style.css';
 
 const ROW_NUM = 8;
 const COLUMN_NUM = 8;
@@ -10,22 +13,25 @@ class SeatPickerComponent extends React.Component {
   constructor(props) {
     super(props)
 
+    const rows = this.generateSeatMap()
+
     this.state = {
       loading: false,
+      selected: false,
+      confirmed: false,
+      selectedSeat: {},
+      rows,
     }
   }
 
   addSeatCallback = ({ row, number, id }, addCb) => {
     this.setState(
       {
-        loading: true
+        loading: true,
       },
       async () => {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        console.log(`Added seat ${number}, row ${row}, id ${id}`);
-        const newTooltip = `tooltip for id-${id} added by callback`;
-        addCb(row, number, id, newTooltip);
-        this.setState({ loading: false });
+        addCb(row, number, id, '');
+        this.setState({ loading: false, selected: true, selectedSeat: { row, number, id } });
       }
     );
   };
@@ -42,16 +48,9 @@ class SeatPickerComponent extends React.Component {
       },
       async () => {
         if (removeCb) {
-          await new Promise(resolve => setTimeout(resolve, 750));
-          console.log(
-            `Removed seat ${params.number}, row ${params.row}, id ${params.id}`
-          );
           removeCb(params.row, params.number);
         }
-        await new Promise(resolve => setTimeout(resolve, 750));
-        console.log(`Added seat ${number}, row ${row}, id ${id}`);
-        const newTooltip = `tooltip for id-${id} added by callback`;
-        addCb(row, number, id, newTooltip);
+        addCb(row, number, id, '');
         this.setState({ loading: false });
       }
     );
@@ -63,11 +62,7 @@ class SeatPickerComponent extends React.Component {
         loading: true
       },
       async () => {
-        await new Promise(resolve => setTimeout(resolve, 1500));
-        console.log(`Removed seat ${number}, row ${row}, id ${id}`);
-        // A value of null will reset the tooltip to the original while '' will hide the tooltip
-        const newTooltip = ["A", "B", "C"].includes(row) ? null : "";
-        removeCb(row, number, newTooltip);
+        removeCb(row, number, '');
         this.setState({ loading: false });
       }
     );
@@ -81,7 +76,7 @@ class SeatPickerComponent extends React.Component {
         const entry = {
           id: i * COLUMN_NUM + j,
           number: `$${i}.${j}`,
-          isSelected: true,
+          isReserved: Math.random() > 0.7,
         }
         if (j != 0 && j % COLUMN_STEP == 0) {
           row.push(null)  
@@ -97,23 +92,44 @@ class SeatPickerComponent extends React.Component {
     return rows
   }
 
+  seatConfirmed = () => {
+    this.setState({ confirmed: true })
+  }
+
   render() {
-    let rows = this.generateSeatMap()
-    const { loading } = this.state
+    const { loading, selected, confirmed, selectedSeat, rows } = this.state
 
     return (
       <div className="seat-picker">
-        <SeatPicker
-          addSeatCallback={this.addSeatCallback}
-          removeSeatCallback={this.removeSeatCallback}
-          rows={rows}
-          maxReservableSeats={100}
-          alpha
-          visible
-          selectedByDefault
-          loading={loading}
-          tooltipProps={{ multiline: true }}
-        />
+        {!confirmed && (
+          <React.Fragment>
+            <SeatPicker
+              addSeatCallback={this.addSeatCallback}
+              removeSeatCallback={this.removeSeatCallback}
+              rows={rows}
+              maxReservableSeats={100}
+              alpha
+              visible
+              selectedByDefault
+              loading={loading}
+              tooltipProps={{ multiline: true }}
+            />
+            <div className="seat-picker-action">
+              {selected && (
+                <Button variant="success" onClick={this.seatConfirmed}>{`Confirm Selection (${selectedSeat.number})`}</Button>
+              )}
+              {!selected && (
+                <Button variant="light" disabled>Select a Seat</Button>
+              )}
+            </div>
+          </React.Fragment>
+        )}
+        {confirmed && (
+          <div className="seat-confirm-box">
+            <i className="fa fa-check" />
+            <span className="seat-confirmed">{`Seat ${selectedSeat.number} Confirmed`}</span>
+          </div>
+        )}
       </div>
     )
   }
