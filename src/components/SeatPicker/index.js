@@ -8,6 +8,8 @@ const ROW_NUM = 8;
 const COLUMN_NUM = 8;
 const ROW_STEP = 4;
 const COLUMN_STEP = 4;
+const PRICE_TOP = 50
+const PRICE_BOTTOM = 20
 
 class SeatPickerComponent extends React.Component {
   constructor(props) {
@@ -21,6 +23,7 @@ class SeatPickerComponent extends React.Component {
       confirmed: false,
       selectedSeat: {},
       rows,
+      totalPrice: 0,
     }
   }
 
@@ -31,7 +34,9 @@ class SeatPickerComponent extends React.Component {
       },
       async () => {
         addCb(row, number, id, '');
-        this.setState({ loading: false, selected: true, selectedSeat: { row, number, id } });
+        let { totalPrice } = this.state
+        totalPrice += Number(number.slice(1))
+        this.setState({ loading: false, selected: true, selectedSeat: { row, number, id }, totalPrice });
       }
     );
   };
@@ -73,9 +78,10 @@ class SeatPickerComponent extends React.Component {
     for( let i = 0; i < ROW_NUM; i++ ) {
       let row = []
       for( let j = 0; j < COLUMN_NUM; j++ ) {
+        const price = PRICE_BOTTOM + Math.floor(Math.random() * (PRICE_TOP - PRICE_BOTTOM));
         const entry = {
           id: i * COLUMN_NUM + j,
-          number: `$${i}.${j}`,
+          number: `$${price}`,
           isReserved: Math.random() > 0.7,
         }
         if (j != 0 && j % COLUMN_STEP == 0) {
@@ -97,7 +103,7 @@ class SeatPickerComponent extends React.Component {
   }
 
   render() {
-    const { loading, selected, confirmed, selectedSeat, rows } = this.state
+    const { loading, selected, confirmed, selectedSeat, rows, totalPrice } = this.state
 
     return (
       <div className="seat-select">
@@ -105,7 +111,7 @@ class SeatPickerComponent extends React.Component {
           <React.Fragment>
             <div className="seat-picker-header">
               {Array.from(Array(8).keys()).map((item, index) => (
-                <div className="seat-picker-header-column">
+                <div key={index} className="seat-picker-header-column">
                   { index + 1 }
                 </div>
               ))}
@@ -123,7 +129,7 @@ class SeatPickerComponent extends React.Component {
             />
             <div className="seat-picker-action">
               {selected && (
-                <Button variant="success" onClick={this.seatConfirmed}>{`Confirm Selection (${selectedSeat.number})`}</Button>
+                <Button variant="success" onClick={this.seatConfirmed}>{`Confirm Selection ($${totalPrice})`}</Button>
               )}
               {!selected && (
                 <Button variant="light" disabled>Select a Seat</Button>
@@ -134,7 +140,7 @@ class SeatPickerComponent extends React.Component {
         {confirmed && (
           <div className="seat-confirm-box">
             <i className="fa fa-check" />
-            <span className="seat-confirmed">{`Seat ${selectedSeat.number} Confirmed`}</span>
+            <span className="seat-confirmed">{`Seat $${totalPrice} Confirmed`}</span>
           </div>
         )}
       </div>
