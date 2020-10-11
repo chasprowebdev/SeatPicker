@@ -34,8 +34,12 @@ class SeatPickerComponent extends React.Component {
       },
       async () => {
         addCb(row, number, id, '');
-        let { totalPrice } = this.state
-        totalPrice += Number(number.slice(1))
+        let { totalPrice, rows } = this.state
+        const allSeats = rows
+          .reduce((sum, item) => [...sum, ...item], [])
+          .filter(item => !!item)
+        const highlighedRow = allSeats.find(item => item.id == id)
+        totalPrice += (highlighedRow ? highlighedRow.price : 0)
         this.setState({ loading: false, selected: true, selectedSeat: { row, number, id }, totalPrice });
       }
     );
@@ -68,7 +72,13 @@ class SeatPickerComponent extends React.Component {
       },
       async () => {
         removeCb(row, number, '');
-        this.setState({ loading: false });
+        let { totalPrice, rows } = this.state
+        const allSeats = rows
+          .reduce((sum, item) => [...sum, ...item], [])
+          .filter(item => !!item)
+        const highlighedRow = allSeats.find(item => item.id == id)
+        totalPrice -= highlighedRow ? highlighedRow.price : 0
+        this.setState({ loading: false, totalPrice });
       }
     );
   };
@@ -79,9 +89,11 @@ class SeatPickerComponent extends React.Component {
       let row = []
       for( let j = 0; j < COLUMN_NUM; j++ ) {
         const price = PRICE_BOTTOM + Math.floor(Math.random() * (PRICE_TOP - PRICE_BOTTOM));
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         const entry = {
           id: i * COLUMN_NUM + j,
-          number: `$${price}`,
+          number: `${characters[i]}${j + 1}`,
+          price,
           isReserved: Math.random() > 0.7,
         }
         if (j != 0 && j % COLUMN_STEP == 0) {
