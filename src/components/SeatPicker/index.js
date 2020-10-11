@@ -100,9 +100,16 @@ class SeatPickerComponent extends React.Component {
     const { loading, selected, confirmed, selectedSeat, rows } = this.state
 
     return (
-      <div className="seat-picker">
+      <div className="seat-select">
         {!confirmed && (
           <React.Fragment>
+            <div className="seat-picker-header">
+              {Array.from(Array(8).keys()).map((item, index) => (
+                <div className="seat-picker-header-column">
+                  { index + 1 }
+                </div>
+              ))}
+            </div>
             <SeatPicker
               addSeatCallback={this.addSeatCallback}
               removeSeatCallback={this.removeSeatCallback}
